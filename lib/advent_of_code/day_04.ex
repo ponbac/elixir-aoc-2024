@@ -7,10 +7,10 @@ defmodule AdventOfCode.Day04 do
   ]
 
   @diagonal_directions [
-    {1, 1},    # down-right
-    {1, -1},   # down-left
+    {-1, -1},   # up-left
     {-1, 1},   # up-right
-    {-1, -1}   # up-left
+    {1, -1},   # down-left
+    {1, 1},    # down-right
   ]
 
   def part1(input) do
@@ -44,10 +44,9 @@ defmodule AdventOfCode.Day04 do
   end
 
   defp mas_cross_at_position?(grid, {row, col}, {height, width}) do
-    positions = [
-      {row-1, col-1}, {row-1, col+1},  # top left, top right
-      {row+1, col-1}, {row+1, col+1}   # bottom left, bottom right
-    ]
+    positions = Enum.map(@diagonal_directions, fn {dy, dx} ->
+      {row + dy, col + dx}
+    end)
 
     with "A" <- grid |> Enum.at(row) |> Enum.at(col),
          true <- Enum.all?(positions, &in_bounds?(&1, height, width)),
