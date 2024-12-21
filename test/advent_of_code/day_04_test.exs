@@ -21,11 +21,21 @@ defmodule AdventOfCode.Day04Test do
     assert result == 18
   end
 
-  @tag :skip
   test "part2" do
-    input = nil
-    result = part2(input)
+    input = """
+    MMMSXXMASM
+    MSAMXMSMSA
+    AMXSXMAAMM
+    MSAMASMSMX
+    XMASAMXAMM
+    XXAMMXXAMA
+    SMSMSASXSS
+    SAXAMASAAA
+    MAMMMXMMMM
+    MXMXAXMASX
+    """
+    result = String.trim(input) |> part2()
 
-    assert result
+    assert result == 9
   end
 end

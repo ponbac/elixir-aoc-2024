@@ -1,23 +1,69 @@
 defmodule AdventOfCode.Day04 do
   def part1(input) do
     grid = parse_input(input)
-    height = length(grid)
-    width = length(Enum.at(grid, 0))
+    dimensions = {length(grid), length(Enum.at(grid, 0))}
 
-    for row <- 0..(height - 1),
-        col <- 0..(width - 1),
-        direction <- directions(),
+    for row <- 0..(elem(dimensions, 0) - 1),
+        col <- 0..(elem(dimensions, 1) - 1),
+        direction <- directions() ++ diagonal_directions(),
         reduce: 0 do
-      acc ->
-        if check_xmas(grid, {row, col}, direction, width, height) do
-          acc + 1
-        else
-          acc
-        end
+      acc -> acc + if xmas_at_position?(grid, {row, col}, direction, dimensions), do: 1, else: 0
     end
   end
 
-  def part2(_args) do
+  def part2(input) do
+    grid = parse_input(input)
+    dimensions = {length(grid), length(Enum.at(grid, 0))}
+
+    for row <- 0..(elem(dimensions, 0) - 1),
+        col <- 0..(elem(dimensions, 1) - 1),
+        reduce: 0 do
+      acc -> acc + if mas_cross_at_position?(grid, {row, col}, dimensions), do: 1, else: 0
+    end
+  end
+
+  defp xmas_at_position?(grid, start_pos, direction, {height, width}) do
+    0..3
+    |> Enum.map(&position_at(start_pos, direction, &1))
+    |> Enum.all?(&in_bounds?(&1, height, width))
+    and get_word_with_length(grid, start_pos, direction, 4) == "XMAS"
+  end
+
+  defp mas_cross_at_position?(grid, {row, col}, {height, width}) do
+    positions = [
+      {row-1, col-1}, {row-1, col+1},  # top left, top right
+      {row+1, col-1}, {row+1, col+1}   # bottom left, bottom right
+    ]
+
+    with "A" <- grid |> Enum.at(row) |> Enum.at(col),
+         true <- Enum.all?(positions, &in_bounds?(&1, height, width)),
+         [tl, tr, bl, br] <- Enum.map(positions, fn {r, c} -> grid |> Enum.at(r) |> Enum.at(c) end) do
+      is_mas?(tl <> "A" <> br) and is_mas?(tr <> "A" <> bl)
+    else
+      _ -> false
+    end
+  end
+
+  defp is_mas?(word) do
+    word == "MAS" or word == "SAM"
+  end
+
+  defp get_word_with_length(grid, {row, col}, {dy, dx}, length) do
+    0..(length - 1)
+    |> Enum.map(fn i ->
+      grid
+      |> Enum.at(row + (i * dy))
+      |> Enum.at(col + (i * dx))
+    end)
+    |> Enum.join()
+  end
+
+  defp position_at({row, col}, {dy, dx}, offset) do
+    {row + (offset * dy), col + (offset * dx)}
+  end
+
+  defp in_bounds?({row, col}, height, width) do
+    row >= 0 and row < height and col >= 0 and col < width
   end
 
   def parse_input(input) do
@@ -28,34 +74,19 @@ defmodule AdventOfCode.Day04 do
 
   defp directions do
     [
-      {0, 1},   # right
-      {1, 0},   # down
-      {0, -1},  # left
-      {-1, 0},  # up
-      {1, 1},   # down-right
-      {1, -1},  # down-left
-      {-1, 1},  # up-right
-      {-1, -1}  # up-left
+      {0, 1},    # right
+      {1, 0},    # down
+      {0, -1},   # left
+      {-1, 0},   # up
     ]
   end
 
-  defp check_xmas(grid, {row, col}, {dy, dx}, width, height) do
-    positions = for i <- 0..3 do
-      {row + (i * dy), col + (i * dx)}
-    end
-
-    if Enum.all?(positions, fn {r, c} ->
-      r >= 0 and r < height and c >= 0 and c < width
-    end) do
-      letters = positions
-      |> Enum.map(fn {r, c} ->
-        grid |> Enum.at(r) |> Enum.at(c)
-      end)
-      |> Enum.join()
-
-      letters == "XMAS"
-    else
-      false
-    end
+  defp diagonal_directions do
+    [
+      {1, 1},    # down-right
+      {1, -1},   # down-left
+      {-1, 1},   # up-right
+      {-1, -1}   # up-left
+    ]
   end
 end
