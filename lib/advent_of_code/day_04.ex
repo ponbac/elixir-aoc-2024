@@ -1,11 +1,25 @@
 defmodule AdventOfCode.Day04 do
+  @directions [
+    {0, 1},    # right
+    {1, 0},    # down
+    {0, -1},   # left
+    {-1, 0},   # up
+  ]
+
+  @diagonal_directions [
+    {1, 1},    # down-right
+    {1, -1},   # down-left
+    {-1, 1},   # up-right
+    {-1, -1}   # up-left
+  ]
+
   def part1(input) do
     grid = parse_input(input)
     dimensions = {length(grid), length(Enum.at(grid, 0))}
 
     for row <- 0..(elem(dimensions, 0) - 1),
         col <- 0..(elem(dimensions, 1) - 1),
-        direction <- directions() ++ diagonal_directions(),
+        direction <- @directions ++ @diagonal_directions,
         reduce: 0 do
       acc -> acc + if xmas_at_position?(grid, {row, col}, direction, dimensions), do: 1, else: 0
     end
@@ -70,23 +84,5 @@ defmodule AdventOfCode.Day04 do
     input
     |> String.split("\n", trim: true)
     |> Enum.map(&String.graphemes/1)
-  end
-
-  defp directions do
-    [
-      {0, 1},    # right
-      {1, 0},    # down
-      {0, -1},   # left
-      {-1, 0},   # up
-    ]
-  end
-
-  defp diagonal_directions do
-    [
-      {1, 1},    # down-right
-      {1, -1},   # down-left
-      {-1, 1},   # up-right
-      {-1, -1}   # up-left
-    ]
   end
 end
